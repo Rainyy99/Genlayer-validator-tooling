@@ -1,0 +1,17 @@
+[Unit]
+Description=GenLayer Validator Node
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=youruser
+WorkingDirectory=/home/youruser/genlayer-node
+EnvironmentFile=/home/youruser/genlayer-node/.env
+ExecStart=/usr/bin/docker compose --profile node up
+Restart=always
+RestartSec=10
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
