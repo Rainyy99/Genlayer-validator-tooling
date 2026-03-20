@@ -18,6 +18,6 @@
 - Systemd (Linux server)
 - Opsional: Prometheus + Grafana untuk full monitoring
 
-git clone https://github.com/Rainyyy66/genlayer-validator-toolkit.git
+git clone https://github.com/Rainyy99/Genlayer-validator-tooling.git
 cd genlayer-validator-toolkit
 pip install -r requirements.txt
