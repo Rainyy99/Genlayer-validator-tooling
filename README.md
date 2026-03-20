@@ -1,25 +1,23 @@
-# GenLayer Validator Tooling Helper
+# GenLayer Validator Toolkit
 
-Automation scripts, monitoring utilities, and management tools to simplify running a GenLayer validator node.
+**Automation, monitoring, and management utilities** untuk menjalankan GenLayer validator node dengan lebih mudah, reliable, dan zero-downtime sebisa mungkin.
 
-**Contribution Category**: Tooling for running a Validator (50-1000 points on GenLayer Portal)
+**Category Contribution**: Tooling for running a Validator (50 - 1000 points di GenLayer Portal)
 
-### Features
-- Check validator node status (systemd + Docker)
-- Health check LLM API (OpenAI/Anthropic/Gemini dll via config)
-- Auto-restart on failure
-- Basic monitoring loop with alerting (console, extendable to Telegram)
-- Systemd service template for reliable startup
-- Doctor check integration (`genlayernode doctor`)
+### Fitur Utama
+- CLI tool untuk: status check, LLM health check, jalankan `genlayernode doctor`, restart service
+- Monitoring loop otomatis: deteksi issue → alert (console, extend ke Telegram) → auto-restart
+- Integrasi Prometheus metrics (scrape dari port 9153 ops)
+- Systemd service template yang robust (restart=always, env-file support)
+- Contoh config wrapper untuk hide sensitive paths/keys
+- Script tambahan: basic health check bash + auto-upgrade checker
 
 ### Prerequisites
+- GenLayer validator node sudah terinstall (Docker atau binary, lihat [docs resmi](https://docs.genlayer.com/validators/setup-guide))
 - Python 3.8+
-- Docker & Docker Compose (for GenLayer node)
-- GenLayer validator node sudah setup (lihat [official docs](https://docs.genlayer.com/validators/setup-guide))
-- Systemd (untuk Linux server)
+- Systemd (Linux server)
+- Opsional: Prometheus + Grafana untuk full monitoring
 
-### Installation
-```bash
-git clone https://github.com/Rainyyy66/genlayer-validator-tooling.git
-cd genlayer-validator-tooling
+git clone https://github.com/Rainyyy66/genlayer-validator-toolkit.git
+cd genlayer-validator-toolkit
 pip install -r requirements.txt
