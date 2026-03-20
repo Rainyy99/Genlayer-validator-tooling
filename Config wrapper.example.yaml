@@ -1,0 +1,16 @@
+service:
+  name: genlayer-validator
+
+binary:
+  path: /home/user/genlayer-node/bin/genlayernode
+  password_env: NODE_PASSWORD  # dari .env
+
+config:
+  path: /home/user/genlayer-node/configs/node/config.yaml
+
+node:
+  ops_port: 9153
+
+llm:
+  provider: openai          # atau anthropic, gemini, heurist, dll
+  api_key_env: OPENAI_API_KEY  # ambil dari env, bukan hardcode
