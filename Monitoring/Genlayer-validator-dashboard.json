@@ -1,0 +1,80 @@
+{
+  "title": "GenLayer Validator Dashboard",
+  "description": "Simple dashboard for GenLayer validator metrics (port 9153)",
+  "tags": ["genlayer", "validator", "prometheus"],
+  "timezone": "browser",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "title": "CPU Usage",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "CPU %"
+        }
+      ],
+      "unit": "percent"
+    },
+    {
+      "title": "GenLayer Node Uptime",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "genlayer_node_uptime_seconds" }
+      ],
+      "unit": "s",
+      "colorMode": "value",
+      "thresholds": { "mode": "absolute", "steps": [{ "color": "green" }] }
+    },
+    {
+      "title": "Block Processing Rate",
+      "type": "graph",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(genlayer_block_processed_total[5m])", "legendFormat": "Blocks/sec" }
+      ]
+    },
+    {
+      "title": "Consensus Health",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "genlayer_consensus_health" }
+      ],
+      "unit": "none",
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          { "value": null, "color": "red" },
+          { "value": 0.8, "color": "yellow" },
+          { "value": 0.95, "color": "green" }
+        ]
+      }
+    },
+    {
+      "title": "Metrics Endpoint Status",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "up{job=\"genlayer-validator\"}" }
+      ],
+      "mappings": [
+        { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+      ]
+    }
+  ],
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "templating": { "list": [] },
+  "schemaVersion": 39,
+  "version": 1
+}
