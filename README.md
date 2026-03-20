@@ -2,8 +2,6 @@
 
 **Automation, monitoring, and management utilities** untuk menjalankan GenLayer validator node dengan lebih mudah, reliable, dan zero-downtime sebisa mungkin.
 
-**Category Contribution**: Tooling for running a Validator (50 - 1000 points di GenLayer Portal)
-
 ### Fitur Utama
 - CLI tool untuk: status check, LLM health check, jalankan `genlayernode doctor`, restart service
 - Monitoring loop otomatis: deteksi issue → alert (console, extend ke Telegram) → auto-restart
