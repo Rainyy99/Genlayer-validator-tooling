@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+"""
+GenLayer Validator Toolkit v0.2
+CLI untuk manage validator: status, doctor, health, monitor, restart
+"""
+
+import argparse
+import subprocess
+import requests
+import time
+import yaml
+import os
+import sys
+from datetime import datetime
+
+def load_config(config_path):
+    if not os.path.isfile(config_path):
+        print(f"Config tidak ditemukan: {config_path}")
+        sys.exit(1)
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+def run_cmd(cmd, capture_output=True):
+    try:
+        result = subprocess.run(cmd, shell=True, capture_output=capture_output, text=True, timeout=60)
+        return result.stdout.strip(), result.returncode == 0, result.stderr.strip()
+    except Exception as e:
+        return "", False, str(e)
+
+def get_node_status(config):
+    service = config.get('service', {}).get('name', 'genlayer-validator')
+    print(f"[{datetime.now()}] Status service '{service}':")
+    out, ok, err = run_cmd(f"systemctl status {service} --no-pager -l")
+    print(out or err)
+    return ok
+
+def run_doctor(config):
+    binary = config.get('binary', {}).get('path', './bin/genlayernode')
+    conf_path = config.get('config', {}).get('path', './configs/node/config.yaml')
+    password = config.get('binary', {}).get('password_env', 'NODE_PASSWORD')  # from env
+    cmd = f"{binary} doctor -c {conf_path}"
+    if password:
+        cmd = f"export $(cat .env | xargs) && {cmd}"  # simple env load
+    print(f"Running doctor check...")
+    out, ok, err = run_cmd(cmd)
+    print(out or err)
+    return ok
+
+def check_llm_health(config):
+    # Simple check via API ping (contoh OpenAI/Anthropic)
+    llm = config.get('llm', {})
+    provider = llm.get('provider', '').lower()
+    key = llm.get('api_key') or os.getenv(llm.get('api_key_env', ''))
+    
+    if not key:
+        print("LLM API key tidak ditemukan!")
+        return False
+    
+    if provider == 'openai':
+        try:
+            r = requests.get("https://api.openai.com/v1/models", headers={"Authorization": f"Bearer {key}"}, timeout=10)
+            ok = r.status_code == 200
+            print(f"OpenAI: {'OK' if ok else f'FAILED ({r.status_code})'}")
+            return ok
+        except Exception as e:
+            print(f"OpenAI check error: {e}")
+            return False
+    # Extend untuk Anthropic dll
+    print(f"Check untuk provider '{provider}' belum diimplementasi. Assume OK.")
+    return True
+
+def check_metrics_endpoint(config):
+    ops_port = config.get('node', {}).get('ops_port', 9153)
+    url = f"http://localhost:{ops_port}/metrics"
+    try:
+        r = requests.get(url, timeout=5)
+        ok = r.status_code == 200 and "genlayer_" in r.text
+        print(f"Metrics endpoint ({url}): {'OK' if ok else 'FAILED'}")
+        return ok
+    except:
+        print(f"Metrics endpoint tidak reachable.")
+        return False
+
+def restart_node(config):
+    service = config.get('service', {}).get('name', 'genlayer-validator')
+    print(f"Restarting {service}...")
+    _, ok, err = run_cmd(f"systemctl restart {service}")
+    if ok:
+        print("Restart berhasil.")
+    else:
+        print(f"Gagal: {err}")
+    return ok
+
+def monitor(config_path, interval=180):
+    config = load_config(config_path)
+    print(f"Monitoring aktif (interval {interval}s). Tekan Ctrl+C untuk stop.")
+    while True:
+        print("\n--- Check ---")
+        status_ok = get_node_status(config)
+        doctor_ok = run_doctor(config)
+        llm_ok = check_llm_health(config)
+        metrics_ok = check_metrics_endpoint(config)
+        
+        if not all([status_ok, doctor_ok, llm_ok, metrics_ok]):
+            print("!!! MASALAH TERDETEKSI !!! Auto-restart...")
+            restart_node(config)
+            # Extend: kirim Telegram/Discord di sini
+        
+        time.sleep(interval)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="GenLayer Validator Toolkit")
+    parser.add_argument("command", choices=["status", "doctor", "health", "metrics", "restart", "monitor"])
+    parser.add_argument("--config", default="my_config.yaml", help="Path ke config wrapper")
+    parser.add_argument("--interval", type=int, default=180, help="Interval monitor (detik)")
+    args = parser.parse_args()
+    
+    config = load_config(args.config)
+    
+    if args.command == "status":
+        get_node_status(config)
+    elif args.command == "doctor":
+        run_doctor(config)
+    elif args.command == "health":
+        check_llm_health(config)
+    elif args.command == "metrics":
+        check_metrics_endpoint(config)
+    elif args.command == "restart":
+        restart_node(config)
+    elif args.command == "monitor":
+        monitor(args.config, args.interval)
