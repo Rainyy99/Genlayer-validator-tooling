@@ -1,0 +1,4 @@
+sudo cp systemd/genlayer-validator.service.example /etc/systemd/system/genlayer-validator.service
+# Edit WorkingDirectory, User, EnvironmentFile sesuai
+sudo systemctl daemon-reload
+sudo systemctl enable --now genlayer-validator.service
