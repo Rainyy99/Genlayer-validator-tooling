@@ -1,1 +1,0 @@
-Node GenLayer expose metrics di http://localhost:9153/metrics (enable di config.yaml: ops.endpoints.metrics: true).
